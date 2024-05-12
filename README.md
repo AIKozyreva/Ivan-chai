@@ -115,4 +115,15 @@ qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-color-sc
 
 Кажется, "для наглядности" лучше смотреть в таблицу.
 
+_______________________________________________________________________________________________________________________________________________
+**Relative-frequency**
+В общем ещё есть вариант посчитать не общее распределение, а относительное. Это вот такое:
+>This relative-freq table only providing me number of seq per sample and the occurrence of each feature in the whole sample.
+>We’d like to see, for example, that proteobacteria proportionally makes up 55% (0.55) of sample 1, but 75% (0.75) of sample 2. 
+```
+qiime feature-table relative-frequency --i-table collapsed_feature_table.qza --o-relative-frequency-table ./relative/rel-phyla-table.qza
+qiime tools export --input-path "./relative/rel-phyla-table.qza" --output-path "./relative/"
+biom convert -i "./relative/feature-table.biom" -o "./relative/rel_collapsed_feature_table.tsv" --to-tsv
+```
+Все таблички на листах с соответствующими названиеми в файле res_table_uniteDB_ph6_2023.xlsx
 
