@@ -25,9 +25,9 @@ sample-96	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350
 sample-97	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_97_1.fq.gz	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_97_2.fq.gz
 sample-98	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_98_1.fq.gz	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_98_2.fq.gz
 sample-99	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_99_1.fq.gz	/mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/data_chai/V350031121_L03_99_2.fq.gz
-
 ```
-Import and visualisation commands
+**Import and visualisation commands**
+
 ```
 qiime tools import --type 'SampleData[PairedEndSequencesWithQuality]' --input-path ./manifest.tmp --output-path ./seq.qza --input-format PairedEndFastqManifestPhred33V2
 qiime demux summarize --i-data seq.qza --o-visualization seq_summary.qzv
@@ -75,14 +75,44 @@ qiime dada2 denoise-paired [OPTIONS]
                          or `trunc-len-r` (depending on the direction of the
                          read) it is discarded.                   [default: 2]
 ```
-We have had primers:
+**We have had primers:**
 > GGAAGGAGAAGTCGTAACAAGG 18S-ITS1F-new
 > AGATATCCGTTGCCGAGAGT 58S-ITS1R-new
 
 > ATCGAGTYTTTGAACGCAAGTTG 58S-ITS2F-new
 > TCCTCCGCTTATTGATATGCT 28S-ITS2R-new
 
-Command
+_______________________________________________________________________________________________________________________________________________
+**Denoising DADA2 Command**
 ```
 qiime dada2 denoise-paired --i-demultiplexed-seqs demux-paired.qza --p-trunc-len-f 190 --p-trunc-len-r 165 --p-trunc-q 10 --p-trim-left-f 23 --p-trim-left-r 20 --o-table "./denoising/feature_table.qza" --o-representative-sequences "./denoising/rep_seqs.qza" --o-denoising-stats "./denoising/stats.qza" --verbose
 ```
+_________________________________________________________________________________________________________________________________________________
+**Classifier**
+Сначала попробуем использовать классификатор натренированный на старой (2023 года) версии БД unite: https://github.com/colinbrislawn/unite-train/releases/tag/9.0-qiime2-2023.2-demo . 
+```
+mkdir taxonomy
+qiime feature-classifier classify-sklearn --i-classifier ../unite_ver9_dynamic_all_29.11.2022-Q2-2023.2.qza --i-reads denoising/rep_seqs.qza --o-classification "taxonomy/taxonomy.qza" --p-confidence 0.94
+qiime tools export --input-path "taxonomy/taxonomy.qza" --output-path "taxonomy"
+qiime tools export --input-path "denoising/feature_table.qza" --output-path "denoising/"
+biom convert -i "denoising/feature-table.biom" -o "denoising/feature-table.tsv" --to-tsv
+```
+Так, это у нас таблица почищенных features (в таблице лист feature-table), где каждая строка цифро-букв - это уникальный набор "одинаково похожих" последовательностей. На следующем шаге collapse мы объединяем все features, у которых одна и та же таксономия. 
+
+```
+qiime taxa collapse --i-table "denoising/feature_table.qza" --i-taxonomy "taxonomy/taxonomy.qza" --p-level 6 --o-collapsed-table "collapsed_feature_table.qza"
+qiime tools export --input-path "./collapsed_feature_table.qza" --output-path "./"
+biom convert -i "./feature-table.biom" -o "./collapsed_feature_table.tsv" --to-tsv
+```
+Таблица сохранена и находится на листе "collapsed_feature_table". Далее пробуем построить heatmap для нагладности.
+```
+qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-no-normalize --p-color-scheme Purples_r --o-visualization ./collapsed_feature_table_heatmap #картинка 1 наглядно ясно, что при таких больших разбросах делать без нормализции - это плохая идея...
+qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed_feature_table_heatmap #картинка 2 ситуация the same, но график поприятнее
+```
+![image](https://github.com/AIKozyreva/Ivan-chai/assets/74992091/d862f385-9d37-4682-ba2b-d91847244c80)
+
+![image](https://github.com/AIKozyreva/Ivan-chai/assets/74992091/eb291552-14d8-4d86-813b-c94f5582ee85)
+
+Кажется, "для наглядности" лучше смотреть в таблицу.
+
+
