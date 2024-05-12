@@ -141,4 +141,20 @@ qiime tools export --input-path "taxonomy/taxonomy.qza" --output-path "taxonomy"
 qiime tools export --input-path "denoising/feature_table.qza" --output-path "denoising/"
 biom convert -i "denoising/feature-table.biom" -o "denoising/feature-table.tsv" --to-tsv
 ```
+Далее все команды аналогичные прошлому подходу.
+```
+qiime taxa collapse --i-table "denoising/feature_table.qza" --i-taxonomy "taxonomy/taxonomy.qza" --p-level 7 --o-collapsed-table "collapsed7_feature_table.qza"
+qiime tools export --input-path "./collapsed7_feature_table.qza" --output-path "./"
+biom convert -i "./feature-table.biom" -o "./collapsed7_feature_table.tsv" --to-tsv
+qiime feature-table heatmap --i-table ./collapsed7_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed7_feature_table_heatmap
+```
+![image](https://github.com/AIKozyreva/Ivan-chai/assets/74992091/9c90a041-ad68-4a57-9ff1-e2b690fe4416)
+_______________________________________________________________________________________________________________________________________________
+### Relative-frequency
+```
+qiime feature-table relative-frequency --i-table collapsed7_feature_table.qza --o-relative-frequency-table ./relative/rel-phyla7-table.qza
+qiime tools export --input-path "./relative/rel-phyla7-table.qza" --output-path "./relative/"
+biom convert -i "./relative/feature-table.biom" -o "./relative/rel_collapsed7_feature_table.tsv" --to-tsv
+```
 
+Все данныые на листах внутри таблицы res_table_unite10DB_ph7_2024.xl и в папке with_unite-10
