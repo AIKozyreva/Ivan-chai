@@ -83,12 +83,12 @@ qiime dada2 denoise-paired [OPTIONS]
 > TCCTCCGCTTATTGATATGCT 28S-ITS2R-new
 
 _______________________________________________________________________________________________________________________________________________
-**Denoising DADA2 Command**
+### Denoising DADA2 Command
 ```
 qiime dada2 denoise-paired --i-demultiplexed-seqs demux-paired.qza --p-trunc-len-f 190 --p-trunc-len-r 165 --p-trunc-q 10 --p-trim-left-f 23 --p-trim-left-r 20 --o-table "./denoising/feature_table.qza" --o-representative-sequences "./denoising/rep_seqs.qza" --o-denoising-stats "./denoising/stats.qza" --verbose
 ```
 _________________________________________________________________________________________________________________________________________________
-**Classifier**
+### Classifier
 Сначала попробуем использовать классификатор натренированный на старой (2023 года) версии БД unite: https://github.com/colinbrislawn/unite-train/releases/tag/9.0-qiime2-2023.2-demo . 
 ```
 mkdir taxonomy
@@ -104,7 +104,7 @@ qiime taxa collapse --i-table "denoising/feature_table.qza" --i-taxonomy "taxono
 qiime tools export --input-path "./collapsed_feature_table.qza" --output-path "./"
 biom convert -i "./feature-table.biom" -o "./collapsed_feature_table.tsv" --to-tsv
 ```
-Таблица сохранена и находится на листе "collapsed_feature_table". Далее пробуем построить heatmap для нагладности.
+Таблица сохранена и находится на листе "collapsed_feature_table". Далее пробуем построить heatmap для наглядности.
 ```
 qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-no-normalize --p-color-scheme Purples_r --o-visualization ./collapsed_feature_table_heatmap #картинка 1 наглядно ясно, что при таких больших разбросах делать без нормализции - это плохая идея...
 qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed_feature_table_heatmap #картинка 2 ситуация the same, но график поприятнее
@@ -116,7 +116,7 @@ qiime feature-table heatmap --i-table ./collapsed_feature_table.qza --p-color-sc
 Кажется, "для наглядности" лучше смотреть в таблицу.
 
 _______________________________________________________________________________________________________________________________________________
-**Relative-frequency**
+### Relative-frequency
 В общем ещё есть вариант посчитать не общее распределение, а относительное. Это вот такое:
 >This relative-freq table only providing me number of seq per sample and the occurrence of each feature in the whole sample.
 >We’d like to see, for example, that proteobacteria proportionally makes up 55% (0.55) of sample 1, but 75% (0.75) of sample 2. 
@@ -126,4 +126,19 @@ qiime tools export --input-path "./relative/rel-phyla-table.qza" --output-path "
 biom convert -i "./relative/feature-table.biom" -o "./relative/rel_collapsed_feature_table.tsv" --to-tsv
 ```
 Все таблички на листах с соответствующими названиеми в файле res_table_uniteDB_ph6_2023.xlsx
+
+
+
+## QIIME2 + DADA2 + pretrained NaiveBayes + Unite ver 10.0 db (unite_ver10_97_all_04.04.2024-Q2-2024.2.qza)
+
+### Import and Denoising DADA2 Commands are the same
+### Classifier
+Попробуем использовать классификатор натренированный на новой (2024 года) версии БД unite: https://github.com/colinbrislawn/unite-train/releases/tag/v10.0-v04.04.2024-qiime2-2024.2 Всё,  конечно, хорошо, но для этого придётся обновить QIIMe2 до версии 2024ю2, а то он иначе не хочет (удивительно да)
+```
+mkdir taxonomy
+qiime feature-classifier classify-sklearn --i-classifier ../unite_ver10_97_all_04.04.2024-Q2-2024.2.qza --i-reads denoising/rep_seqs.qza --o-classification "taxonomy/taxonomy.qza" --p-confidence 0.94
+qiime tools export --input-path "taxonomy/taxonomy.qza" --output-path "taxonomy"
+qiime tools export --input-path "denoising/feature_table.qza" --output-path "denoising/"
+biom convert -i "denoising/feature-table.biom" -o "denoising/feature-table.tsv" --to-tsv
+```
 
