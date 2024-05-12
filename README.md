@@ -5,7 +5,7 @@ Raw data: /mnt/SSD4TB/STORAGE/240412_MGI_ITS
 
 my Project folder: /mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion 
 
-## QIIME2 + DADA2 + pretrained NaiveBayes + Unite db (UNiref97-99 for all euk version for 2023.2)
+## QIIME2 + DADA2 + pretrained NaiveBayes + Unite ver 9.0 db (UNiref97-99 for all euk version for 2023.2)
 
 ### Import data
 Manifest file is: /mnt/SSD4TB/PROJECTS/kozyreva_works/qiime2/chamaenerion/manifest.tmp
