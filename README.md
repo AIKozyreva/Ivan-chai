@@ -159,8 +159,9 @@ qiime feature-table heatmap --i-table ./collapsed_trim_feature_table.qza --p-col
 _______________________________________________________________________________________________________________________________________________
 ### Relative-frequency
 ```
-qiime feature-table relative-frequency --i-table collapsed7_feature_table.qza --o-relative-frequency-table ./relative/rel-phyla7-table.qza
-qiime tools export --input-path "./relative/rel-phyla7-table.qza" --output-path "./relative/"
+mkdir relative
+qiime feature-table relative-frequency --i-table collapsed_trim_feature_table.qza --o-relative-frequency-table ./relative/rel-phyla-trim-table.qza
+qiime tools export --input-path "./relative/rel-phyla-trim-table.qza" --output-path "./relative/"
 biom convert -i "./relative/feature-table.biom" -o "./relative/rel_collapsed7_feature_table.tsv" --to-tsv
 ```
 
