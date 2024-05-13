@@ -75,17 +75,23 @@ qiime dada2 denoise-paired [OPTIONS]
                          or `trunc-len-r` (depending on the direction of the
                          read) it is discarded.                   [default: 2]
 ```
-**We have had primers:**
+**We have had primers: cutadapt**
 > GGAAGGAGAAGTCGTAACAAGG 18S-ITS1F-new
 > AGATATCCGTTGCCGAGAGT 58S-ITS1R-new
 
 > ATCGAGTYTTTGAACGCAAGTTG 58S-ITS2F-new
 > TCCTCCGCTTATTGATATGCT 28S-ITS2R-new
 
+So, use cutadapt:
+```
+qiime cutadapt trim-paired --i-demultiplexed-sequences seq.qza --p-front-f GGAAGGAGAAGTCGTAACAAGG --p-front-r AGATATCCGTTGCCGAGAGT --p-front-f ATCGAGTYTTTGAACGCAAGTTG --p-front-r TCCTCCGCTTATTGATATGCT --o-trimmed-sequences ./trim_seq.qza
+qiime demux summarize --i-data trim_seq.qza --o-visualization tr_seq_summary.qzv
+```
+
 _______________________________________________________________________________________________________________________________________________
 ### Denoising DADA2 Command
 ```
-qiime dada2 denoise-paired --i-demultiplexed-seqs demux-paired.qza --p-trunc-len-f 190 --p-trunc-len-r 165 --p-trunc-q 10 --p-trim-left-f 23 --p-trim-left-r 20 --o-table "./denoising/feature_table.qza" --o-representative-sequences "./denoising/rep_seqs.qza" --o-denoising-stats "./denoising/stats.qza" --verbose
+qiime dada2 denoise-paired --i-demultiplexed-seqs trim_seq.qza --p-trunc-len-f 190 --p-trunc-len-r 165 --p-trunc-q 10 --p-trim-left-f 23 --p-trim-left-r 20 --o-table "./denoising/feature_table.qza" --o-representative-sequences "./denoising/trim_rep_seqs.qza" --o-denoising-stats "./denoising/trimstats.qza" --verbose
 ```
 _________________________________________________________________________________________________________________________________________________
 ### Classifier
@@ -136,19 +142,19 @@ biom convert -i "./relative/feature-table.biom" -o "./relative/rel_collapsed_fea
 Попробуем использовать классификатор натренированный на новой (2024 года) версии БД unite: https://github.com/colinbrislawn/unite-train/releases/tag/v10.0-v04.04.2024-qiime2-2024.2 Всё,  конечно, хорошо, но для этого придётся обновить QIIMe2 до версии 2024ю2, а то он иначе не хочет (удивительно да)
 ```
 mkdir taxonomy
-qiime feature-classifier classify-sklearn --i-classifier ../unite_ver10_97_all_04.04.2024-Q2-2024.2.qza --i-reads denoising/rep_seqs.qza --o-classification "taxonomy/taxonomy.qza" --p-confidence 0.94
+qiime feature-classifier classify-sklearn --i-classifier ../unite_ver10_97_all_04.04.2024-Q2-2024.2.qza --i-reads denoising/trim_rep_seqs.qza --o-classification "taxonomy/taxonomy.qza" --p-confidence 0.94
 qiime tools export --input-path "taxonomy/taxonomy.qza" --output-path "taxonomy"
 qiime tools export --input-path "denoising/feature_table.qza" --output-path "denoising/"
-biom convert -i "denoising/feature-table.biom" -o "denoising/feature-table.tsv" --to-tsv
+biom convert -i "denoising/feature-table.biom" -o "denoising/trim_feature-table.tsv" --to-tsv
 ```
 Далее все команды аналогичные прошлому подходу.
 ```
-qiime taxa collapse --i-table "denoising/feature_table.qza" --i-taxonomy "taxonomy/taxonomy.qza" --p-level 7 --o-collapsed-table "collapsed7_feature_table.qza"
-qiime tools export --input-path "./collapsed7_feature_table.qza" --output-path "./"
-biom convert -i "./feature-table.biom" -o "./collapsed7_feature_table.tsv" --to-tsv
-qiime feature-table heatmap --i-table ./collapsed7_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed7_feature_table_heatmap
+qiime taxa collapse --i-table "denoising/feature_table.qza" --i-taxonomy "taxonomy/taxonomy.qza" --p-level 7 --o-collapsed-table "collapsed_trim_feature_table.qza"
+qiime tools export --input-path "./collapsed_trim_feature_table.qza" --output-path "./"
+biom convert -i "./feature-table.biom" -o "./collapsed_trim_feature_table.tsv" --to-tsv
+qiime feature-table heatmap --i-table ./collapsed_trim_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed_trim_table_heatmap
 ```
-![image](https://github.com/AIKozyreva/Ivan-chai/assets/74992091/9c90a041-ad68-4a57-9ff1-e2b690fe4416)
+
 _______________________________________________________________________________________________________________________________________________
 ### Relative-frequency
 ```
