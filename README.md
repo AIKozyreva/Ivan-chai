@@ -154,6 +154,7 @@ qiime tools export --input-path "./collapsed_trim_feature_table.qza" --output-pa
 biom convert -i "./feature-table.biom" -o "./collapsed_trim_feature_table.tsv" --to-tsv
 qiime feature-table heatmap --i-table ./collapsed_trim_feature_table.qza --p-color-scheme Purples_r --o-visualization ./norm_collapsed_trim_table_heatmap
 ```
+![image](https://github.com/AIKozyreva/Ivan-chai/assets/74992091/6b59146b-4f35-4f63-a0f0-b684e5c2faf2)
 
 _______________________________________________________________________________________________________________________________________________
 ### Relative-frequency
